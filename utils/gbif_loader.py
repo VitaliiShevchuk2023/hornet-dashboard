@@ -62,7 +62,11 @@ def load_observations(
 
     # Обробка дат
     df["eventDate"] = pd.to_datetime(df["eventDate"], errors="coerce")
-    df["year"]  = df["eventDate"].dt.year.astype("Int64")
+    # Використовуємо year з CSV якщо є, інакше парсимо з eventDate
+    if "year" not in df.columns or df["year"].isna().sum() > len(df) * 0.3:
+        df["year"] = df["eventDate"].dt.year.astype("Int64")
+    else:
+        df["year"] = pd.to_numeric(df["year"], errors="coerce").astype("Int64")
     df["month"] = df["eventDate"].dt.month.astype("Int64")
 
     # GADM поля
