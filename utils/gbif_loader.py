@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import os
 from pygbif import species, occurrences as occ
 
 SPECIES = {
@@ -10,6 +11,11 @@ SPECIES = {
 COLORS = {
     "European hornet": "#f5a623",
     "Asian hornet":    "#d0021b",
+}
+
+CSV_FILES = {
+    "European hornet": "data/european_hornet_DE.csv",
+    "Asian hornet":    "data/asian_hornet_DE.csv",
 }
 
 @st.cache_data(ttl=3600, show_spinner="Loading GBIF data...")
@@ -23,62 +29,68 @@ def load_observations(
     country: str = "DE",
     limit: int = 300,
 ) -> tuple[pd.DataFrame, int]:
-    key = get_species_key(species_name)
 
-    # Завантажуємо по 50 записів на рік для рівномірного покриття
-    records_per_year = max(10, limit // 25)
-    years = range(2000, 2026)
-    all_results = []
-
-    for year in years:
-        res = occ.search(
-            taxonKey=key,
-            country=country,
-            year=year,
-            limit=records_per_year,
-        )
-        if res["results"]:
-            all_results.extend(res["results"])
-
-    total_res = occ.search(taxonKey=key, country=country, limit=1)
-    total = total_res["count"]
-
-    if not all_results:
-        return pd.DataFrame(), total
-
-    df = pd.DataFrame(all_results)
-    df["eventDate"] = pd.to_datetime(df["eventDate"], errors="coerce")
-    df["year"] = df["eventDate"].dt.year
-    df["year"] = pd.to_numeric(df["year"], errors="coerce").astype("Int64")
-
+    # Пробуємо завантажити з CSV якщо country=DE
     label = next(
         (k for k, v in SPECIES.items() if v == species_name),
         species_name
     )
-    df["species_label"] = label
-    df["color"] = COLORS.get(label, "#999")
+    csv_path = CSV_FILES.get(label)
 
-    # Extract GADM fields
+    if country == "DE" and csv_path and os.path.exists(csv_path):
+        df = pd.read_csv(csv_path)
+        total = len(df)
+    else:
+        # Fallback: API
+        key = get_species_key(species_name)
+        records_per_year = max(10, limit // 25)
+        all_results = []
+        for year in range(2000, 2026):
+            res = occ.search(
+                taxonKey=key,
+                country=country,
+                year=year,
+                limit=records_per_year,
+            )
+            if res["results"]:
+                all_results.extend(res["results"])
+        total = len(all_results)
+        df = pd.DataFrame(all_results) if all_results else pd.DataFrame()
+
+    if df.empty:
+        return pd.DataFrame(), 0
+
+    # Обробка дат
+    df["eventDate"] = pd.to_datetime(df["eventDate"], errors="coerce")
+    df["year"]  = df["eventDate"].dt.year.astype("Int64")
+    df["month"] = df["eventDate"].dt.month.astype("Int64")
+
+    # GADM поля
     if "gadm" in df.columns:
-        df["bundesland"] = df["gadm"].apply(
-            lambda x: x.get("level1", {}).get("name", "")
-            if isinstance(x, dict) else ""
-        )
-        df["landkreis"] = df["gadm"].apply(
-            lambda x: x.get("level2", {}).get("name", "")
-            if isinstance(x, dict) else ""
-        )
+        def safe_gadm(x, level):
+            try:
+                if isinstance(x, dict):
+                    return x.get(level, {}).get("name", "")
+                import ast
+                d = ast.literal_eval(str(x))
+                return d.get(level, {}).get("name", "")
+            except Exception:
+                return ""
+        df["bundesland"] = df["gadm"].apply(lambda x: safe_gadm(x, "level1"))
+        df["landkreis"]  = df["gadm"].apply(lambda x: safe_gadm(x, "level2"))
     else:
         df["bundesland"] = df.get("stateProvince", "")
-        df["landkreis"] = ""
+        df["landkreis"]  = ""
+
+    df["species_label"] = label
+    df["color"]         = COLORS.get(label, "#999")
 
     keep = [
         "species", "species_label", "color",
         "decimalLatitude", "decimalLongitude",
         "eventDate", "year", "month",
         "stateProvince", "bundesland", "landkreis",
-        "locality", "basisOfRecord",
-        "gbifID",
+        "locality", "basisOfRecord", "gbifID",
     ]
     cols = [c for c in keep if c in df.columns]
     return df[cols], total
