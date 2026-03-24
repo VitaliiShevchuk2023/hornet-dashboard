@@ -58,11 +58,26 @@ def load_observations(
     df["species_label"] = label
     df["color"] = COLORS.get(label, "#999")
 
+    # Extract GADM fields
+    if "gadm" in df.columns:
+        df["bundesland"] = df["gadm"].apply(
+            lambda x: x.get("level1", {}).get("name", "")
+            if isinstance(x, dict) else ""
+        )
+        df["landkreis"] = df["gadm"].apply(
+            lambda x: x.get("level2", {}).get("name", "")
+            if isinstance(x, dict) else ""
+        )
+    else:
+        df["bundesland"] = df.get("stateProvince", "")
+        df["landkreis"] = ""
+
     keep = [
         "species", "species_label", "color",
         "decimalLatitude", "decimalLongitude",
-        "eventDate", "year",
-        "stateProvince", "basisOfRecord",
+        "eventDate", "year", "month",
+        "stateProvince", "bundesland", "landkreis",
+        "locality", "basisOfRecord",
         "gbifID",
     ]
     cols = [c for c in keep if c in df.columns]
