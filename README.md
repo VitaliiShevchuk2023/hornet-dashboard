@@ -3,7 +3,7 @@
 **Project:** CorrelAid × NABU (Naturschutzbund Deutschland)
 **Purpose:** Exploratory prototype for analyzing the spread of *Vespa crabro* (European hornet) and *Vespa velutina* (Asian hornet) using GBIF occurrence data.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://https://hornet-dashboard.streamlit.app//)
 
 
 ### Architecture Overview
