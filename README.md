@@ -26,7 +26,7 @@
 
 This dashboard is a **rapid prototype** built to explore and visualize hornet occurrence patterns across Central Europe. It covers six research questions relevant to NABU's conservation monitoring work, from species displacement and habitat preference to climate influence and protected area presence.
 
-> ⚠️ This is a **Streamlit prototype**, not the final product. The production dashboard will be implemented in **Django + HTMX** with a PostgreSQL/PostGIS backend.
+> ⚠️ This is a **Streamlit prototype**, not the final product. The production dashboard will be implemented in **Django + HTMX**.
 
 ---
 
