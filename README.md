@@ -28,6 +28,22 @@ This dashboard is a **rapid prototype** built to explore and visualize hornet oc
 
 > ⚠️ This is a **Streamlit prototype**, not the final product. The production dashboard will be implemented in **Django + HTMX**.
 
+
+## What is Streamlit?
+
+**Streamlit** is a Python library for quickly building interactive web dashboards for data without any web development knowledge.
+
+**Core idea:** unlike Jupyter Notebooks where code and thinking process are visible, Streamlit shows only the results — which is exactly what non-technical stakeholders need.
+
+**Three key advantages:**
+- pure Python — no HTML/CSS/JS required
+- rapid prototyping — dashboard in minutes
+- automatic interactivity — sliders and buttons without complex code
+
+**For the NABU project:** Streamlit enables quick presentation of hornet distribution analysis as interactive maps and charts — without web development overhead at the prototyping stage.
+
+
+
 ---
 
 <a id="tech-stack"></a>
