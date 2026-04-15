@@ -21,6 +21,7 @@
 
 ---
 
+<a id="overview"></a>
 ## Overview
 
 This dashboard is a **rapid prototype** built to explore and visualize hornet occurrence patterns across Central Europe. It covers six research questions relevant to NABU's conservation monitoring work, from species displacement and habitat preference to climate influence and protected area presence.
@@ -29,6 +30,7 @@ This dashboard is a **rapid prototype** built to explore and visualize hornet oc
 
 ---
 
+<a id="tech-stack"></a>
 ## 🛠️ Tech Stack
 
 ### Data & Analysis
@@ -66,6 +68,7 @@ This dashboard is a **rapid prototype** built to explore and visualize hornet oc
 
 ---
 
+<a id="architecture"></a>
 ## 🏗️ Architecture
 
 Multi-page Streamlit application with a shared data loading utility:
@@ -88,6 +91,7 @@ data/                       # Local CSV cache (gitignored — large files)
 
 ---
 
+<a id="research-questions"></a>
 ## 🔬 Research Questions
 
 | Page | Research Question | Key Visualizations |
@@ -112,6 +116,7 @@ All pages share consistent sidebar filters:
 
 ---
 
+<a id="data-layer"></a>
 ## 📦 Data Layer (`utils/gbif_loader.py`)
 
 - Loads occurrence records for both species via **pygbif** (GBIF REST API)
@@ -123,6 +128,7 @@ All pages share consistent sidebar filters:
 
 ---
 
+<a id="design-decisions"></a>
 ## 🧠 Design Decisions
 
 **Offline-first for Germany**
@@ -139,6 +145,7 @@ Q6 fetches ERA5 reanalysis data for 6 representative German cities to use averag
 
 ---
 
+<a id="known-limitations"></a>
 ## ⚠️ Known Limitations
 
 | Area | Limitation |
@@ -153,6 +160,7 @@ Q6 fetches ERA5 reanalysis data for 6 representative German cities to use averag
 
 ---
 
+<a id="getting-started"></a>
 ## 🚀 Getting Started
 
 ### Prerequisites
