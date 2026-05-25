@@ -1,0 +1,12 @@
+project_name = "hornet-dashboard"
+environment  = "prod"
+location     = "westeurope"
+image_tag    = "latest"
+
+eu_hornet_gdrive_id = "YOUR_EU_HORNET_GDRIVE_FILE_ID"
+as_hornet_gdrive_id = "YOUR_AS_HORNET_GDRIVE_FILE_ID"
+
+min_replicas = 0
+max_replicas = 3
+cpu          = "0.5"
+memory       = "1Gi"
