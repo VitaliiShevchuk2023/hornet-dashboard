@@ -1,0 +1,73 @@
+name: Build & Deploy to Azure (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Docker image tag (default: git SHA)"
+        required: false
+        default: ""
+  # Розкоментуй коли повністю переїдеш з Streamlit Cloud:
+  # push:
+  #   branches: [main]
+
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  TF_VAR_eu_hornet_gdrive_id: ${{ secrets.EU_HORNET_GDRIVE_ID }}
+  TF_VAR_as_hornet_gdrive_id: ${{ secrets.AS_HORNET_GDRIVE_ID }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        run: |
+          TAG="${{ github.event.inputs.image_tag }}"
+          if [ -z "$TAG" ]; then TAG="${{ github.sha }}"; fi
+          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Docker login to ACR
+        run: az acr login --name hornetdashboardprod
+
+      - name: Build and push image
+        run: |
+          docker build \
+            -t hornetdashboardprod.azurecr.io/hornet-dashboard:${{ env.IMAGE_TAG }} \
+            -t hornetdashboardprod.azurecr.io/hornet-dashboard:latest .
+          docker push hornetdashboardprod.azurecr.io/hornet-dashboard:${{ env.IMAGE_TAG }}
+          docker push hornetdashboardprod.azurecr.io/hornet-dashboard:latest
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform apply
+        working-directory: terraform
+        run: |
+          terraform apply -auto-approve \
+            -var="image_tag=${{ env.IMAGE_TAG }}"
+
+      - name: Print dashboard URL
+        working-directory: terraform
+        run: terraform output dashboard_url
