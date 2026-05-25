@@ -239,3 +239,27 @@ def load_both(country: str = "DE", limit: int = 300) -> pd.DataFrame:
         if not df.empty:
             frames.append(df)
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
+# ── Azure Blob Storage loader ─────────────────────────
+def download_from_azure(label: str) -> str:
+    """Download CSV from Azure Blob Storage (primary source)."""
+    account_name = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME", "sthornetdashboard")
+    container    = os.environ.get("AZURE_STORAGE_CONTAINER", "gbif-data")
+    blob_name    = f"{label.lower().replace(' ', '_')}_DE.csv"
+    url          = f"https://{account_name}.blob.core.windows.net/{container}/{blob_name}"
+    path         = CSV_PATHS.get(label, f"/tmp/{blob_name}")
+
+    if os.path.exists(path):
+        return path
+
+    try:
+        import requests as req
+        r = req.get(url, timeout=30)
+        if r.status_code == 200:
+            with open(path, "wb") as f:
+                f.write(r.content)
+            return path
+    except Exception as e:
+        st.warning(f"Azure Blob download failed: {e}")
+    return ""

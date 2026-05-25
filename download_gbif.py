@@ -90,3 +90,36 @@ for label, name in SPECIES_MAP.items():
     print(f"Saved {len(df)} to {fname}")
 
 print("\nDone!")
+
+
+# ── Azure Blob Storage upload (опційно) ───────────────
+def upload_to_azure(file_path: str, blob_name: str) -> None:
+    """Upload CSV file to Azure Blob Storage if credentials are set."""
+    account_name = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME")
+    account_key  = os.environ.get("AZURE_STORAGE_ACCOUNT_KEY")
+    container    = os.environ.get("AZURE_STORAGE_CONTAINER", "gbif-data")
+
+    if not account_name or not account_key:
+        print("Azure Storage credentials not set — skipping upload")
+        return
+
+    try:
+        from azure.storage.blob import BlobServiceClient
+        client = BlobServiceClient(
+            account_url=f"https://{account_name}.blob.core.windows.net",
+            credential=account_key,
+        )
+        blob = client.get_blob_client(container=container, blob=blob_name)
+        with open(file_path, "rb") as f:
+            blob.upload_blob(f, overwrite=True)
+        print(f"Uploaded {blob_name} to Azure Blob Storage")
+    except Exception as e:
+        print(f"Azure upload failed: {e}")
+
+
+if os.environ.get("UPLOAD_TO_AZURE") == "true":
+    for label in SPECIES_MAP:
+        fname     = f"data/{label.lower().replace(' ', '_')}_DE.csv"
+        blob_name = f"{label.lower().replace(' ', '_')}_DE.csv"
+        if os.path.exists(fname):
+            upload_to_azure(fname, blob_name)
