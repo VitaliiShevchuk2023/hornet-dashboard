@@ -228,3 +228,66 @@ The app will be available at `http://localhost:8501`.
 
 ---
 
+---
+
+## ☁️ Azure Deployment
+
+The dashboard is deployed on **Azure Container Apps** in addition to Streamlit Community Cloud.
+
+**Live URL (Azure):**
+https://ca-hornet-dashboard-prod.lemonsea-c0f089e8.westeurope.azurecontainerapps.io
+
+### Infrastructure (Terraform)
+
+All Azure resources are defined as Infrastructure-as-Code in the `terraform/` directory:
+
+| Resource | Name | Purpose |
+|----------|------|---------|
+| Resource Group | `rg-hornet-dashboard-prod` | Container for all Azure resources |
+| Container Registry | `hornetdashboardprod` | Private Docker image registry |
+| Container Apps Environment | `cae-hornet-dashboard-prod` | Shared networking layer |
+| Container App | `ca-hornet-dashboard-prod` | Streamlit app hosting |
+| Log Analytics Workspace | `log-hornet-dashboard-prod` | Logs and monitoring |
+
+### Deployment settings
+
+| Parameter | Value |
+|-----------|-------|
+| Region | `westeurope` |
+| CPU | 0.5 vCPU |
+| Memory | 1 Gi |
+| Min replicas | 0 (scale-to-zero) |
+| Max replicas | 3 |
+| Port | 8501 |
+
+### Re-deploying after code changes
+
+```bash
+# 1. Build and push new image to ACR
+az acr build \
+  --registry hornetdashboardprod \
+  --image hornet-dashboard:latest \
+  .
+
+# 2. Update Container App
+az containerapp update \
+  --name ca-hornet-dashboard-prod \
+  --resource-group rg-hornet-dashboard-prod \
+  --image hornetdashboardprod.azurecr.io/hornet-dashboard:latest
+```
+
+### CI/CD
+
+`.github/workflows/deploy-azure.yml` — manual trigger only.
+Streamlit Cloud remains primary hosting while Azure is being validated.
+
+### Cost estimate
+
+| Resource | Est. monthly cost |
+|----------|-------------------|
+| Container Registry (Basic) | ~$5 |
+| Container Apps (scale-to-zero) | $0–8 |
+| Log Analytics | ~$2 |
+| **Total** | **~$7–15/month** |
+
+> Never commit `terraform.tfvars` or `terraform.tfstate` — listed in `.gitignore`.
