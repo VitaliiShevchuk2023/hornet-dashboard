@@ -291,3 +291,90 @@ Streamlit Cloud remains primary hosting while Azure is being validated.
 | **Total** | **~$7–15/month** |
 
 > Never commit `terraform.tfvars` or `terraform.tfstate` — listed in `.gitignore`.
+
+
+---
+
+## 📦 Azure Blob Storage — Public Data Access
+
+GBIF occurrence data is available as public CSV files in Azure Blob Storage.
+No authentication required — accessible directly from Jupyter, DataLab, or any Python environment.
+
+| Species | URL |
+|---------|-----|
+| European hornet (*Vespa crabro*) | `https://sthornetprodvsh.blob.core.windows.net/gbif-data/european_hornet_DE.csv` |
+| Asian hornet (*Vespa velutina*) | `https://sthornetprodvsh.blob.core.windows.net/gbif-data/asian_hornet_DE.csv` |
+
+**Coverage:** Germany (DE), years 2000-2025, up to 20,000 records per year per species.
+
+### Usage in Jupyter / DataLab
+
+    import pandas as pd
+
+    BLOB_BASE = "https://sthornetprodvsh.blob.core.windows.net/gbif-data"
+
+    # European hornet - native species, control group
+    df_eu = pd.read_csv(f"{BLOB_BASE}/european_hornet_DE.csv", low_memory=False)
+
+    # Asian hornet - invasive, first detected in Germany 2014 (Baden-Wurttemberg)
+    df_as = pd.read_csv(f"{BLOB_BASE}/asian_hornet_DE.csv", low_memory=False)
+
+    print(f"European hornet: {len(df_eu):,} records")
+    print(f"Asian hornet:    {len(df_as):,} records")
+    print(f"Total:           {len(df_eu) + len(df_as):,} records")
+
+---
+
+## 🔄 Automated GBIF Pipeline
+
+GBIF data is refreshed automatically every **Monday at 03:00 UTC** via an **Azure Container Apps Job**.
+
+### Architecture
+
+    Every Monday 03:00 UTC
+            |
+            v
+    Container Apps Job
+    (download_gbif.py)
+            |
+            |  GBIF API with exponential backoff on 429 errors
+            |  Rate limit: 0.5 req/s | Job timeout: 2 hours
+            |
+            v
+    Azure Blob Storage (public read)
+            |
+            |-- Container App reads CSV on startup
+            |-- Volunteers access directly via public URL
+
+### Pipeline resources
+
+| Resource | Name | Purpose |
+|----------|------|---------|
+| Storage Account | `sthornetprodvsh` | Hosts public CSV files |
+| Storage Container | `gbif-data` | Public blob container (read access) |
+| Container Apps Job | `job-gbif-sync-prod` | Weekly scheduled pipeline |
+
+### Manual trigger
+
+    # Trigger pipeline manually
+    az containerapp job start \
+      --name job-gbif-sync-prod \
+      --resource-group rg-hornet-dashboard-prod
+
+    # Check execution status
+    az containerapp job execution list \
+      --name job-gbif-sync-prod \
+      --resource-group rg-hornet-dashboard-prod \
+      --output table
+
+### Rate limit handling
+
+GBIF enforces a rate limit of ~1 request/second. The pipeline handles this with:
+
+- **0.5 req/s throttle** - 2-second pause between every API call
+- **Exponential backoff** on 429 errors - waits 10s, 20s, 40s, 80s, 160s
+- **60-second pause** between species downloads to reset the rate limit window
+- **2-hour job timeout** to accommodate full dataset download (~80K records)
+
+> The pipeline fetches data directly from the GBIF API.
+> No dependency on Google Drive in the Azure environment.
