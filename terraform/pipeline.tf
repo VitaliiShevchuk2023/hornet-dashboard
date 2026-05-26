@@ -6,7 +6,7 @@ resource "azurerm_container_app_job" "gbif_sync" {
   location                     = azurerm_resource_group.main.location
   container_app_environment_id = azurerm_container_app_environment.main.id
 
-  replica_timeout_in_seconds = 3600
+  replica_timeout_in_seconds = 7200
 
   schedule_trigger_config {
     cron_expression          = "0 3 * * 1"
