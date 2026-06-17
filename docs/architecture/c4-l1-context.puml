@@ -4,7 +4,7 @@
 title Hornet Dashboard — System Context (C4 Level 1)
 
 Person(community, "NABU community", "Citizen scientist, web browser")
-Person(scientist, "NABU scientist", "Theresa Seidel — research priorities")
+Person(scientist, "NABU scientist", "Research priorities")
 Person(dev, "CorrelAid team", "Developers, researchers")
 
 System(dashboard, "Hornet Dashboard", "Streamlit app on Azure. Visualizes Vespa crabro / velutina occurrence data for 6 research questions.")
