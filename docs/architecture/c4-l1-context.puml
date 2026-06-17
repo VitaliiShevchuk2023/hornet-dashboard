@@ -1,0 +1,25 @@
+@startuml C4_L1_SystemContext
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Hornet Dashboard — System Context (C4 Level 1)
+
+Person(community, "NABU community", "Citizen scientist, web browser")
+Person(scientist, "NABU scientist", "Theresa Seidel — research priorities")
+Person(dev, "CorrelAid team", "Developers, researchers")
+
+System(dashboard, "Hornet Dashboard", "Streamlit app on Azure. Visualizes Vespa crabro / velutina occurrence data for 6 research questions.")
+
+System_Ext(gbif, "GBIF", "Global Biodiversity Information Facility. Occurrence API via pygbif.")
+System_Ext(naturgucker, "NABU|naturgucker", "Citizen science platform. Weekly upload to GBIF.")
+System_Ext(nabuweb, "NABU Website", "Public website. Will embed dashboard via iFrame (pending decision).")
+
+Rel(community, dashboard, "Views sightings map")
+Rel(scientist, dashboard, "Reviews research questions Q1-Q6")
+Rel(dev, dashboard, "Develops and deploys")
+
+Rel(dashboard, gbif, "Fetches occurrence data", "HTTPS, pygbif")
+Rel(naturgucker, gbif, "Uploads observations", "Weekly")
+Rel(dashboard, nabuweb, "Embeds dashboard", "iFrame, pending")
+
+SHOW_LEGEND()
+@enduml
