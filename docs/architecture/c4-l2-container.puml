@@ -5,7 +5,7 @@ title Hornet Dashboard — Container diagram (C4 Level 2, as-built)
 
 Person(community, "NABU community / scientist", "Web browser")
 
-System_Boundary(azure, "Azure (SECLAB subscription, westeurope)") {
+System_Boundary(azure, "Azure (westeurope)") {
     Container(app, "Container App", "Streamlit, Python", "Renders dashboard pages. scale-to-zero, ACA.")
     Container(job, "Container Apps Job", "Python, pygbif", "Weekly GBIF sync. Exponential backoff 10s-160s, 7200s timeout.")
     ContainerDb(blob, "Blob Storage", "Azure Blob", "european_hornet_DE.csv, asian_hornet_DE.csv")
