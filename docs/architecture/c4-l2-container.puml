@@ -1,0 +1,37 @@
+@startuml C4_L2_Container
+!include c4lib/C4_Container.puml
+
+title Hornet Dashboard — Container diagram (C4 Level 2, as-built)
+
+Person(community, "NABU community / scientist", "Web browser")
+
+System_Boundary(azure, "Azure (SECLAB subscription, westeurope)") {
+    Container(app, "Container App", "Streamlit, Python", "Renders dashboard pages. scale-to-zero, ACA.")
+    Container(job, "Container Apps Job", "Python, pygbif", "Weekly GBIF sync. Exponential backoff 10s-160s, 7200s timeout.")
+    ContainerDb(blob, "Blob Storage", "Azure Blob", "european_hornet_DE.csv, asian_hornet_DE.csv")
+    Container(acr, "Container Registry", "ACR", "Stores Docker images. Built via az acr build.")
+    Container(logs, "Log Analytics", "Azure Monitor", "Job logs, app telemetry")
+}
+
+System_Ext(gbif, "GBIF API", "Occurrence data, REST")
+System_Ext(gdrive, "Google Drive", "Fallback CSV source")
+System_Ext(gh, "GitHub Actions", "CI/CD, currently manual deploy")
+System_Ext(browser, "Browser / NABU iFrame", "End user")
+
+Rel(community, browser, "Uses")
+Rel(browser, app, "HTTPS", "Streamlit UI")
+
+Rel(job, gbif, "Fetches occurrences", "HTTPS, pygbif, rate-limited")
+Rel(job, blob, "Writes CSV", "Weekly")
+Rel(app, blob, "Reads CSV", "pandas")
+Rel(app, gdrive, "Fallback download", "gdown, if Blob unavailable")
+
+Rel(acr, app, "Pulls image")
+Rel(acr, job, "Pulls image")
+Rel(gh, acr, "az acr build", "Currently manual")
+
+Rel(job, logs, "Writes logs")
+Rel(app, logs, "Writes telemetry")
+
+SHOW_LEGEND()
+@enduml
