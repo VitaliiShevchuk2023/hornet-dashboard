@@ -390,3 +390,35 @@ GBIF enforces a rate limit of ~1 request/second. The pipeline handles this with:
 ![Container Diagram](docs/architecture/exported/c4-l2-container.svg)
 
 Diagrams are maintained as code in `docs/architecture/` using PlantUML and the C4 model. To regenerate after editing the `.puml` source, open the file in VS Code with the PlantUML extension and export as SVG (right-click on the preview panel → "Export Current Diagram").
+
+## Updating the diagrams
+
+After editing a `.puml` file in `docs/architecture/`, regenerate the matching SVG so the README stays in sync:
+
+```bash
+PLANTUML_JAR=/home/vscode/.vscode-remote/extensions/jebbs.plantuml-2.18.1/plantuml.jar
+
+java -jar "$PLANTUML_JAR" -tsvg docs/architecture/c4-l1-context.puml -o exported
+java -jar "$PLANTUML_JAR" -tsvg docs/architecture/c4-l2-container.puml -o exported
+```
+
+PlantUML names the output file after the `@startuml` identifier, not the source filename, so rename to match the README references:
+
+```bash
+mv docs/architecture/exported/C4_L1_SystemContext.svg docs/architecture/exported/c4-l1-context.svg
+mv docs/architecture/exported/C4_L2_Container.svg docs/architecture/exported/c4-l2-container.svg
+```
+
+Commit both the `.puml` source and the regenerated `.svg` together:
+
+```bash
+git add docs/architecture/
+git commit -m "Update C4 diagram: <what changed>"
+git push
+```
+
+If `jebbs.plantuml-2.18.1` no longer matches your installed extension version, find the current jar path with:
+
+```bash
+find / -iname "plantuml*.jar" 2>/dev/null
+```
