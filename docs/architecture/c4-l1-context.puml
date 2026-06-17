@@ -1,5 +1,5 @@
 @startuml C4_L1_SystemContext
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include c4lib/C4_Context.puml
 
 title Hornet Dashboard — System Context (C4 Level 1)
 
