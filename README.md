@@ -378,3 +378,15 @@ GBIF enforces a rate limit of ~1 request/second. The pipeline handles this with:
 
 > The pipeline fetches data directly from the GBIF API.
 > No dependency on Google Drive in the Azure environment.
+
+## Architecture
+
+### System Context (C4 Level 1)
+
+![System Context](docs/architecture/exported/c4-l1-context.svg)
+
+### Container Diagram (C4 Level 2)
+
+![Container Diagram](docs/architecture/exported/c4-l2-container.svg)
+
+Diagrams are maintained as code in `docs/architecture/` using PlantUML and the C4 model. To regenerate after editing the `.puml` source, open the file in VS Code with the PlantUML extension and export as SVG (right-click on the preview panel → "Export Current Diagram").
