@@ -18,7 +18,7 @@
       ]
     }
   },
-  "updateContentCommand": "sudo apt update && sudo apt install -y default-jre graphviz; [ -f packages.txt ] && sudo xargs apt install -y <packages.txt; [ -f requirements.txt ] && pip3 install --user -r requirements.txt; pip3 install --user streamlit; echo '✅ Packages installed and Requirements met'",
+  "updateContentCommand": "sudo rm -f /etc/apt/sources.list.d/yarn.list; sudo apt update && sudo apt install -y default-jre graphviz; [ -f packages.txt ] && sudo xargs apt install -y <packages.txt; [ -f requirements.txt ] && pip3 install --user -r requirements.txt; pip3 install --user streamlit; echo '✅ Packages installed and Requirements met'",
   "postAttachCommand": {
     "server": "streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false"
   },
