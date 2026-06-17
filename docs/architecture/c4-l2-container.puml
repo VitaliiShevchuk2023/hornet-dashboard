@@ -14,7 +14,6 @@ System_Boundary(azure, "Azure (westeurope)") {
 }
 
 System_Ext(gbif, "GBIF API", "Occurrence data, REST")
-System_Ext(gdrive, "Google Drive", "Fallback CSV source")
 System_Ext(gh, "GitHub Actions", "CI/CD, currently manual deploy")
 System_Ext(browser, "Browser / NABU iFrame", "End user")
 
@@ -24,7 +23,6 @@ Rel(browser, app, "HTTPS", "Streamlit UI")
 Rel(job, gbif, "Fetches occurrences", "HTTPS, pygbif, rate-limited")
 Rel(job, blob, "Writes CSV", "Weekly")
 Rel(app, blob, "Reads CSV", "pandas")
-Rel(app, gdrive, "Fallback download", "gdown, if Blob unavailable")
 
 Rel(acr, app, "Pulls image")
 Rel(acr, job, "Pulls image")
