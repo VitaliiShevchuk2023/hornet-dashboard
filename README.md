@@ -18,7 +18,7 @@
 - [Design Decisions](#design-decisions)
 - [Known Limitations](#known-limitations)
 - [Getting Started](#getting-started)
-- [Example 1] (#example 1)
+
 
 ---
 
