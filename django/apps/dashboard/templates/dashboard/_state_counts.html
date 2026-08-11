@@ -1,0 +1,14 @@
+<table>
+    <thead><tr><th>Bundesland</th><th>Species</th><th>Count</th></tr></thead>
+    <tbody>
+        {% for row in counts %}
+        <tr>
+            <td>{{ row.bundesland|default:"—" }}</td>
+            <td>{{ row.species__label }}</td>
+            <td>{{ row.total }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">No verified observations yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>

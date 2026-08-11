@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hornet}
+      POSTGRES_USER: ${POSTGRES_USER:-hornet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hornet}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8000:8000"
+
+  celery-worker:
+    build: .
+    command: celery -A config worker -l info
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+  celery-beat:
+    build: .
+    command: celery -A config beat -l info
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  pgdata:

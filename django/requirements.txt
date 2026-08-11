@@ -1,0 +1,15 @@
+Django==5.1.6
+psycopg[binary]==3.2.4
+gunicorn==23.0.0
+whitenoise==6.8.2
+celery==5.4.0
+redis==5.2.1
+django-celery-beat==2.7.0
+pygbif==0.6.4
+requests==2.33.0
+python-dotenv==1.0.1
+
+# NOTE: gdown removed — it was dead code in the Streamlit prototype (Google
+# Drive fallback path) and carried a CVE liability. Not needed here: Dashboard
+# loads Theresa's CSV directly via `load_dashboard_csv`, Research pulls GBIF
+# via pygbif in a Celery task.

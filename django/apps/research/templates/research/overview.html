@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Research — Q1/Q2 Overview{% endblock %}
+{% block content %}
+<h2>Q1 — Displacement / Q2 — European hornet distribution</h2>
+<p>Total GBIF observations loaded: <b>{{ total }}</b></p>
+<ul>
+    {% for row in by_species %}
+    <li>{{ row.species_label }}: {{ row.n }}</li>
+    {% endfor %}
+</ul>
+<div id="map" style="height: 500px;"></div>
+<script>
+const map = L.map('map').setView([51.1657, 10.4515], 6);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+fetch("{% url 'research:observations-geojson' %}")
+    .then(r => r.json())
+    .then(gj => L.geoJSON(gj, {
+        pointToLayer: (f, latlng) => L.circleMarker(latlng, {radius: 5, fillOpacity: 0.7})
+    }).addTo(map));
+</script>
+{% endblock %}

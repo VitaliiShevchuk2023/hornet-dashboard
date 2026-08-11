@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Hornet Sightings — NABU Dashboard{% endblock %}
+
+{% block content %}
+<div class="filter-bar">
+    <label>Species:
+        <select id="species-filter">
+            <option value="">All</option>
+            {% for s in species_list %}
+                <option value="{{ s.label }}">{{ s.label }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Year:
+        <input type="number" id="year-filter" placeholder="e.g. {{ year_max }}"
+               min="{{ year_min }}" max="{{ year_max }}">
+    </label>
+    <label>
+        <input type="checkbox" id="verified-filter" checked>
+        Photo-verified only
+    </label>
+</div>
+
+<div id="map" style="height: 600px;"></div>
+
+<div id="state-counts"
+     hx-get="{% url 'dashboard:state-counts' %}"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+    Loading counts…
+</div>
+
+<script>
+const map = L.map('map').setView([51.1657, 10.4515], 6); // Germany center
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO'
+}).addTo(map);
+
+let markerLayer = L.layerGroup().addTo(map);
+
+function loadObservations() {
+    const species = document.getElementById('species-filter').value;
+    const year = document.getElementById('year-filter').value;
+    const verifiedOnly = document.getElementById('verified-filter').checked;
+
+    const params = new URLSearchParams();
+    if (species) params.set('species', species);
+    if (year) params.set('year', year);
+    params.set('verified_only', verifiedOnly);
+
+    fetch(`{% url 'dashboard:observations-geojson' %}?${params}`)
+        .then(r => r.json())
+        .then(geojson => {
+            markerLayer.clearLayers();
+            L.geoJSON(geojson, {
+                pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
+                    radius: 6,
+                    fillColor: feature.properties.color,
+                    color: '#333',
+                    weight: 1,
+                    fillOpacity: 0.8,
+                }).bindPopup(
+                    `<b>${feature.properties.species}</b><br>` +
+                    `${feature.properties.bundesland || ''} (${feature.properties.year || '?'})`
+                ),
+            }).addTo(markerLayer);
+        });
+}
+
+document.getElementById('species-filter').addEventListener('change', loadObservations);
+document.getElementById('year-filter').addEventListener('change', loadObservations);
+document.getElementById('verified-filter').addEventListener('change', loadObservations);
+loadObservations();
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Research — Q3 Habitat{% endblock %}
+{% block content %}
+<h2>Q3 — Habitat type correlation</h2>
+<p class="warn">⚠️ Locality-keyword proxy, not a real spatial join (known technical debt).</p>
+<ul>
+    {% for habitat, count in counts.items %}
+    <li>{{ habitat }}: {{ count }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
