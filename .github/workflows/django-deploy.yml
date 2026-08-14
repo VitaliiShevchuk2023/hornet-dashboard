@@ -1,0 +1,39 @@
+name: Deploy to Coolify
+
+# Runs only after the "Django CI" workflow completes successfully on main.
+# This is intentionally decoupled from Coolify's own auto-deploy-on-push
+# webhook — that toggle should be turned OFF on the Coolify resource, so
+# CI passing is what gates deployment, not the raw git push event.
+on:
+  workflow_run:
+    workflows: ["Django CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify deployment
+        run: |
+          curl --fail --silent --show-error \
+            -X GET \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
+            "${{ secrets.COOLIFY_DEPLOY_URL }}"
+
+      - name: Deploy Celery worker
+        if: ${{ vars.COOLIFY_CELERY_WORKER_DEPLOY_URL != '' }}
+        run: |
+          curl --fail --silent --show-error \
+            -X GET \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
+            "${{ vars.COOLIFY_CELERY_WORKER_DEPLOY_URL }}"
+
+      - name: Deploy Celery beat
+        if: ${{ vars.COOLIFY_CELERY_BEAT_DEPLOY_URL != '' }}
+        run: |
+          curl --fail --silent --show-error \
+            -X GET \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
+            "${{ vars.COOLIFY_CELERY_BEAT_DEPLOY_URL }}"
