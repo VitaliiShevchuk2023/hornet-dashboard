@@ -29,8 +29,10 @@ services:
     build: .
     command: >
       sh -c "python manage.py migrate &&
-             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --reload"
     env_file: .env
+    volumes:
+      - .:/app
     depends_on:
       db:
         condition: service_healthy
@@ -43,6 +45,8 @@ services:
     build: .
     command: celery -A config worker -l info
     env_file: .env
+    volumes:
+      - .:/app
     depends_on:
       db:
         condition: service_healthy
@@ -53,6 +57,8 @@ services:
     build: .
     command: celery -A config beat -l info
     env_file: .env
+    volumes:
+      - .:/app
     depends_on:
       db:
         condition: service_healthy

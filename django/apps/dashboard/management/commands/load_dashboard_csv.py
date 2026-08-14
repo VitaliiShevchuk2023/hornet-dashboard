@@ -80,6 +80,7 @@ class Command(BaseCommand):
 
                 Observation.objects.create(
                     species=species,
+                    observation_type=row.get("observation_type", "sighting").strip() or "sighting",
                     location=point,
                     bundesland=row.get("bundesland", "").strip(),
                     landkreis=row.get("landkreis", "").strip(),

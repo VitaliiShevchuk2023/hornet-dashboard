@@ -16,7 +16,19 @@ class Observation(models.Model):
     Populated exclusively by `manage.py load_dashboard_csv` from Theresa's
     finalized November CSV handover — NOT by any scheduled/cron job.
     """
+    SIGHTING = "sighting"
+    NEST = "nest"
+    OBSERVATION_TYPE_CHOICES = [
+        (SIGHTING, "Sighting"),
+        (NEST, "Nest"),
+    ]
+
     species = models.ForeignKey(Species, on_delete=models.CASCADE, related_name="observations")
+    observation_type = models.CharField(
+        max_length=16, choices=OBSERVATION_TYPE_CHOICES, default=SIGHTING,
+        help_text="Derived from NABU's 'Beobachtung' field (e.g. 'am/im Nest' -> nest, "
+                   "everything else -> sighting). Matches the mockup's ART/TYP: Nest filter.",
+    )
     location = models.PointField(geography=True, srid=4326, null=True, blank=True)
     bundesland = models.CharField(max_length=128, blank=True)
     landkreis = models.CharField(max_length=128, blank=True)
@@ -41,6 +53,7 @@ class Observation(models.Model):
         indexes = [
             models.Index(fields=["species", "year"]),
             models.Index(fields=["bundesland"]),
+            models.Index(fields=["observation_type"]),
         ]
 
     def __str__(self) -> str:
